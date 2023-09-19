@@ -102,9 +102,8 @@ extension Driver {
     try addCommonSymbolGraphOptions(commandLine: &commandLine)
 
     try commandLine.appendLast(.checkApiAvailabilityOnly, from: &parsedOptions)
-    if isFrontendArgSupported(.experimentalLazyTypecheck) {
-      try commandLine.appendLast(.experimentalLazyTypecheck, from: &parsedOptions)
-    }
+
+    try addLazyTypecheckingOptions(commandLine: &commandLine)
 
     if parsedOptions.hasArgument(.parseAsLibrary, .emitLibrary) {
       commandLine.appendFlag(.parseAsLibrary)
@@ -127,6 +126,30 @@ extension Driver {
       primaryInputs: [],
       outputs: outputs
     )
+  }
+
+  mutating func addLazyTypecheckingOptions(commandLine: inout [Job.ArgTemplate]) throws {
+    guard parsedOptions.contains(.experimentalLazyTypecheck) else {
+      return
+    }
+
+    // Lazy typechecking is currently only available when library evolution is
+    // also enabled. The speed-up comes from skipping typechecking for
+    // non-public decls, and therefore those decls must be omitted from the
+    // binary module by specifying -experimental-serialize-external-decls-only.
+    // Non-resilient modules need to include non-public decls since they may
+    // be used to compute type memory layouts.
+    guard parsedOptions.contains(.enableLibraryEvolution) else {
+      return
+    }
+
+    guard isFrontendArgSupported(.experimentalSerializeExternalDeclsOnly)
+            && isFrontendArgSupported(.experimentalLazyTypecheck) else {
+      return
+    }
+
+    commandLine.appendFlag(.experimentalLazyTypecheck)
+    commandLine.appendFlag(.experimentalSerializeExternalDeclsOnly)
   }
 
   static func computeEmitModuleSeparately(parsedOptions: inout ParsedOptions,

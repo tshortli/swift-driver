@@ -7270,15 +7270,27 @@ final class SwiftDriverTests: XCTestCase {
   }
 
   func testEmitModuleExperimentalLazyTypecheck() throws {
-    var driver = try Driver(args: [
-      "swiftc", "test.swift", "-module-name", "Test", "-experimental-lazy-typecheck", "-emit-module-interface"
-    ])
-    guard driver.isFrontendArgSupported(.experimentalLazyTypecheck) else {
+    guard try Driver(args: ["swiftc"]).isFrontendArgSupported(.experimentalLazyTypecheck) else {
       throw XCTSkip("Skipping: compiler does not support '-experimental-lazy-typecheck'")
     }
-    let jobs = try driver.planBuild().removingAutolinkExtractJobs()
-    let emitModuleJob = try XCTUnwrap(jobs.first(where: {$0.kind == .emitModule}))
-    XCTAssertTrue(emitModuleJob.commandLine.contains(.flag("-experimental-lazy-typecheck")))
+
+    let baseArgs = ["swiftc", "test.swift", "-module-name", "Test", "-experimental-lazy-typecheck", "-emit-module-interface"]
+
+    do {
+      var driver = try Driver(args: baseArgs)
+      let jobs = try driver.planBuild()
+      let emitModuleJob = try jobs.findJob(.emitModule)
+      XCTAssertFalse(emitModuleJob.commandLine.contains(.flag("-experimental-lazy-typecheck")))
+      XCTAssertFalse(emitModuleJob.commandLine.contains(.flag("-experimental-serialize-external-decls-only")))
+    }
+
+    do {
+      var driver = try Driver(args: baseArgs + ["-enable-library-evolution"])
+      let jobs = try driver.planBuild()
+      let emitModuleJob = try jobs.findJob(.emitModule)
+      XCTAssertTrue(emitModuleJob.commandLine.contains(.flag("-experimental-lazy-typecheck")))
+      XCTAssertTrue(emitModuleJob.commandLine.contains(.flag("-experimental-serialize-external-decls-only")))
+    }
   }
 }
 

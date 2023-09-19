@@ -444,6 +444,7 @@ extension Option {
   public static let ExperimentalPerformanceAnnotations: Option = Option("-experimental-performance-annotations", .flag, attributes: [.helpHidden, .frontend], helpText: "Deprecated, has no effect")
   public static let platformCCallingConventionEQ: Option = Option("-experimental-platform-c-calling-convention=", .joined, alias: Option.platformCCallingConvention, attributes: [.helpHidden, .frontend, .noDriver])
   public static let platformCCallingConvention: Option = Option("-experimental-platform-c-calling-convention", .separate, attributes: [.helpHidden, .frontend, .noDriver], helpText: "Which calling convention is used to perform non-swift calls. Defaults to llvm's standard C calling convention.")
+  public static let experimentalSerializeExternalDeclsOnly = Option("-experimental-serialize-external-decls-only", .flag, attributes: [.helpHidden, .frontend, .noDriver], helpText: "Only serialize decls that should be exposed to clients")
   public static let experimentalPrintFullConvention: Option = Option("-experimental-print-full-convention", .flag, attributes: [.helpHidden, .frontend, .noDriver], helpText: "When emitting a module interface or SIL, emit additional @convention arguments, regardless of whether they were written in the source. Also requires -use-clang-function-types to be enabled.")
   public static let experimentalSkipAllFunctionBodies: Option = Option("-experimental-skip-all-function-bodies", .flag, attributes: [.helpHidden, .frontend, .noDriver], helpText: "Skip type-checking function bodies and all SIL generation")
   public static let experimentalSkipNonInlinableFunctionBodiesWithoutTypes: Option = Option("-experimental-skip-non-inlinable-function-bodies-without-types", .flag, attributes: [.helpHidden, .frontend], helpText: "Skip work on non-inlinable function bodies that do not declare nested types")
@@ -1241,6 +1242,7 @@ extension Option {
       Option.ExperimentalPerformanceAnnotations,
       Option.platformCCallingConventionEQ,
       Option.platformCCallingConvention,
+      Option.experimentalLazyTypecheck,
       Option.experimentalPrintFullConvention,
       Option.experimentalSkipAllFunctionBodies,
       Option.experimentalSkipNonInlinableFunctionBodiesWithoutTypes,
